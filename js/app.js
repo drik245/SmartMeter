@@ -408,14 +408,15 @@
             demoBtn.addEventListener('click', toggleDemoMode);
         }
 
-        // Check URL parameter for auto-demo: ?demo=true
+        // Check URL parameter: ?live=true forces Firebase mode
         const urlParams = new URLSearchParams(window.location.search);
-        const autoDemo = urlParams.get('demo') === 'true';
+        const forceLive = urlParams.get('live') === 'true';
 
-        if (autoDemo || !hasFirebaseConfig()) {
-            startDemoMode();
-        } else {
+        if (forceLive && hasFirebaseConfig()) {
             startFirebaseListeners();
+        } else {
+            // Default: always start in demo mode so the site looks populated
+            startDemoMode();
         }
     });
 

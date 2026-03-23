@@ -143,7 +143,7 @@ body {
     gap: 5px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    color: var(--text-muted);
+    color: var(--text-secondary);
     font-family: var(--font-family);
     font-size: 0.75rem;
     font-weight: 500;
@@ -154,16 +154,16 @@ body {
 }
 
 .demo-toggle-btn:hover {
-    border-color: var(--accent-orange);
-    color: var(--accent-orange);
-    background: var(--accent-orange-dim);
+    border-color: var(--accent-teal);
+    color: var(--accent-teal);
+    background: rgba(45, 212, 191, 0.1);
 }
 
 .demo-toggle-btn.active {
-    border-color: var(--accent-orange);
-    color: var(--accent-orange);
-    background: var(--accent-orange-dim);
-    box-shadow: 0 0 8px rgba(251, 191, 36, 0.15);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+    background: var(--accent-green-dim);
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.15);
 }
 
 .connection-status {

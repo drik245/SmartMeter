@@ -198,6 +198,24 @@ function updatePowerTrend(time, power) {
 }
 
 /**
+ * Bulk-seed data points without re-rendering on each push.
+ * Call this instead of calling updatePowerTrend() in a loop.
+ * @param {Array<{time: string, timestamp: number, power: number}>} points
+ */
+function bulkSeedPowerTrend(points) {
+    powerDataStore.length = 0; // clear existing
+    for (const p of points) {
+        powerDataStore.push(p);
+    }
+    // Trim to max
+    while (powerDataStore.length > MAX_STORE_POINTS) {
+        powerDataStore.shift();
+    }
+    // Single render at the end
+    renderPowerTrendForRange(currentRange);
+}
+
+/**
  * Filter store and render chart for the given range.
  */
 function renderPowerTrendForRange(range) {

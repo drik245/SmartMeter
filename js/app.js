@@ -85,8 +85,9 @@
         addAlert('green', 'System connected and logging normally', 'Today · 00:00 AM');
         addAlert('orange', 'High consumption period — 19:00 to 21:00 yesterday', 'Yesterday · 21:00');
 
-        // Simulate live data — seed 24h of history (1440 minutes)
+        // Simulate 24h of history (1440 minutes) — bulk seed for performance
         let simTime = Date.now() - 1440 * 60 * 1000;
+        const seedPoints = [];
         for (let i = 0; i < 1440; i++) {
             const t = new Date(simTime + i * 60000);
             const hour = t.getHours();
@@ -99,8 +100,9 @@
             const basePower = Math.max(30, dailyCurve + noise);
             const timeStr = t.getHours().toString().padStart(2, '0') + ':' +
                 t.getMinutes().toString().padStart(2, '0');
-            updatePowerTrend(timeStr, Math.round(basePower));
+            seedPoints.push({ time: timeStr, timestamp: simTime + i * 60000, power: Math.round(basePower) });
         }
+        bulkSeedPowerTrend(seedPoints);
 
         // Live update every 2 seconds
         demoIntervalId = setInterval(() => {

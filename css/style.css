@@ -131,6 +131,41 @@ body {
     color: var(--text-muted);
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.demo-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-family: var(--font-family);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.demo-toggle-btn:hover {
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+    background: var(--accent-orange-dim);
+}
+
+.demo-toggle-btn.active {
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+    background: var(--accent-orange-dim);
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.15);
+}
+
 .connection-status {
     display: flex;
     align-items: center;

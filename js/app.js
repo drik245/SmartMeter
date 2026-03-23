@@ -41,19 +41,29 @@
     const MAX_ALERTS = 8;
     let isConnected = false;
     let lastDataTimestamp = 0;
+    let inDemoMode = false;
+    let demoIntervalId = null;
+    let firebaseListenersActive = false;
 
     // =========================================
     //  DEMO MODE  (simulated data)
-    //  Runs when Firebase credentials are not set
     // =========================================
-    function isDemoMode() {
-        return firebaseConfig.apiKey === 'YOUR_API_KEY';
+    function hasFirebaseConfig() {
+        return firebaseConfig.apiKey !== 'YOUR_API_KEY';
     }
 
     function startDemoMode() {
-        console.log('%c⚡ DEMO MODE — Simulated data (set Firebase config to connect to real ESP32)',
+        inDemoMode = true;
+        console.log('%c⚡ DEMO MODE — Showing simulated data',
             'color: #fbbf24; font-weight: bold; font-size: 14px;');
         setConnectionStatus(true, 'Demo');
+        updateDemoButton(true);
+
+        // Reset state
+        peakPowerToday = 0;
+        peakTimeToday = '';
+        alertQueue = [];
+        powerDataStore.length = 0;
 
         // Seed load profile with realistic data
         const seedProfile = [
@@ -80,7 +90,6 @@
         for (let i = 0; i < 1440; i++) {
             const t = new Date(simTime + i * 60000);
             const hour = t.getHours();
-            // Realistic daily profile: low at night, peaks morning & evening
             const dailyCurve = [
                 120, 80, 60, 50, 45, 60, 200, 650, 900, 750,
                 600, 500, 550, 700, 650, 500, 450, 600, 950, 1100,
@@ -94,16 +103,16 @@
         }
 
         // Live update every 2 seconds
-        setInterval(() => {
+        demoIntervalId = setInterval(() => {
+            if (!inDemoMode) return;
             const now = new Date();
             const second = now.getSeconds();
             const minute = now.getMinutes();
 
-            // Simulate slightly varying readings
             const baseCurrent = 4.0 + Math.sin(second * 0.1) * 0.5 + (Math.random() - 0.5) * 0.3;
             const voltage = 228 + Math.sin(minute * 0.2) * 5 + (Math.random() - 0.5) * 3;
             const power = Math.round(voltage * baseCurrent);
-            const energyIncrement = power / 3600 / 1000 * 2; // 2-sec interval in kWh
+            const energyIncrement = power / 3600 / 1000 * 2;
 
             updateLiveReadings({
                 current: parseFloat(baseCurrent.toFixed(2)),
@@ -113,7 +122,6 @@
                 timestamp: now.getTime()
             });
 
-            // Update trend chart every minute
             if (second < 2) {
                 const timeStr = now.getHours().toString().padStart(2, '0') + ':' +
                     now.getMinutes().toString().padStart(2, '0');
@@ -121,8 +129,60 @@
             }
         }, 2000);
 
-        // Set initial cost
         updateCosts(3.41);
+    }
+
+    function stopDemoMode() {
+        inDemoMode = false;
+        if (demoIntervalId) {
+            clearInterval(demoIntervalId);
+            demoIntervalId = null;
+        }
+        updateDemoButton(false);
+
+        // Clear demo data
+        peakPowerToday = 0;
+        alertQueue = [];
+        powerDataStore.length = 0;
+
+        // Reset display
+        DOM.currentValue.textContent = '--';
+        DOM.voltageValue.textContent = '--';
+        DOM.powerValue.textContent = '--';
+        DOM.energyValue.textContent = '--';
+        DOM.peakDemandValue.textContent = '-- W';
+        DOM.peakDemandTime.textContent = 'Recorded at --:-- today';
+        DOM.costToday.textContent = '₹--';
+        DOM.costWeek.textContent = '₹--';
+        DOM.costMonth.textContent = '₹--';
+        DOM.costProjected.textContent = '₹-- est.';
+        renderAlerts();
+        renderPowerTrendForRange(currentRange);
+
+        console.log('%c⚡ DEMO MODE OFF — Switching to live Firebase data',
+            'color: #34d399; font-weight: bold; font-size: 14px;');
+
+        // Start Firebase if credentials exist and not already listening
+        if (hasFirebaseConfig() && !firebaseListenersActive) {
+            startFirebaseListeners();
+        } else if (!hasFirebaseConfig()) {
+            setConnectionStatus(false, 'No config');
+        }
+    }
+
+    function toggleDemoMode() {
+        if (inDemoMode) {
+            stopDemoMode();
+        } else {
+            startDemoMode();
+        }
+    }
+
+    function updateDemoButton(active) {
+        const btn = document.getElementById('demo-toggle-btn');
+        const text = document.getElementById('demo-toggle-text');
+        if (btn) btn.classList.toggle('active', active);
+        if (text) text.textContent = active ? 'Stop Demo' : 'Demo';
     }
 
     // =========================================
@@ -261,6 +321,7 @@
     //  FIREBASE LISTENERS (live mode)
     // =========================================
     function startFirebaseListeners() {
+        firebaseListenersActive = true;
         console.log('%c⚡ LIVE MODE — Listening to Firebase Realtime Database',
             'color: #34d399; font-weight: bold; font-size: 14px;');
 
@@ -326,7 +387,7 @@
     //  STALE DATA DETECTION
     // =========================================
     setInterval(() => {
-        if (!isDemoMode() && isConnected && lastDataTimestamp > 0) {
+        if (!inDemoMode && isConnected && lastDataTimestamp > 0) {
             const elapsed = Date.now() - lastDataTimestamp;
             if (elapsed > 30000) { // 30 seconds without data
                 addAlert('orange',
@@ -341,7 +402,17 @@
     //  INITIALIZATION
     // =========================================
     document.addEventListener('DOMContentLoaded', () => {
-        if (isDemoMode()) {
+        // Wire demo toggle button
+        const demoBtn = document.getElementById('demo-toggle-btn');
+        if (demoBtn) {
+            demoBtn.addEventListener('click', toggleDemoMode);
+        }
+
+        // Check URL parameter for auto-demo: ?demo=true
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoDemo = urlParams.get('demo') === 'true';
+
+        if (autoDemo || !hasFirebaseConfig()) {
             startDemoMode();
         } else {
             startFirebaseListeners();

@@ -1,0 +1,7 @@
+# ESP32 code contains WiFi credentials — do NOT push
+esp32/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

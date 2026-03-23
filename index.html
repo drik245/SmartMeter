@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Real-Time Energy Monitoring Dashboard with Load Profiling and Peak Demand Detection">
+    <title>Energy Monitor — Smart Power Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header" id="dashboard-header">
+            <div class="header-left">
+                <h1 class="header-title">Energy monitor</h1>
+                <p class="header-subtitle">Home — Main supply line</p>
+            </div>
+            <div class="header-right">
+                <span class="last-updated" id="last-updated">Last updated: --:--:--</span>
+                <div class="connection-status" id="connection-status">
+                    <span class="status-dot offline"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Live Readings -->
+        <section class="live-readings" id="live-readings-section">
+            <h2 class="section-label">LIVE READINGS</h2>
+            <div class="readings-grid">
+                <div class="reading-card" id="current-card">
+                    <div class="reading-value" id="current-value">--</div>
+                    <div class="reading-label">Amperes (A)</div>
+                    <div class="reading-status live">
+                        <span class="live-dot"></span> Live
+                    </div>
+                </div>
+                <div class="reading-card" id="voltage-card">
+                    <div class="reading-value" id="voltage-value">--</div>
+                    <div class="reading-label">Volts (V)</div>
+                    <div class="reading-status live">
+                        <span class="live-dot"></span> Live
+                    </div>
+                </div>
+                <div class="reading-card" id="power-card">
+                    <div class="reading-value" id="power-value">--</div>
+                    <div class="reading-label">Watts (W)</div>
+                    <div class="reading-status live">
+                        <span class="live-dot"></span> Live
+                    </div>
+                </div>
+                <div class="reading-card" id="energy-card">
+                    <div class="reading-value" id="energy-value">--</div>
+                    <div class="reading-label">kWh</div>
+                    <div class="reading-sublabel">since 00:00</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Row -->
+        <section class="charts-row" id="charts-section">
+            <div class="chart-card power-trend-card" id="power-trend-card">
+                <div class="chart-header">
+                    <h3 class="chart-title" id="power-trend-title">Power trend — last 30 minutes</h3>
+                    <div class="chart-header-controls">
+                        <div class="time-range-toggle" id="time-range-toggle">
+                            <button class="range-btn active" data-range="30m">30m</button>
+                            <button class="range-btn" data-range="3h">3h</button>
+                            <button class="range-btn" data-range="24h">24h</button>
+                        </div>
+                        <span class="live-badge">
+                            <span class="live-badge-dot"></span> Live
+                        </span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="power-trend-chart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card load-profile-card" id="load-profile-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Load profile — today</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="load-profile-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Cards Row -->
+        <section class="bottom-row" id="bottom-section">
+            <!-- Peak Demand -->
+            <div class="info-card peak-demand-card" id="peak-demand-card">
+                <h3 class="info-card-label">PEAK DEMAND</h3>
+                <div class="info-card-value" id="peak-demand-value">-- W</div>
+                <div class="info-card-sub" id="peak-demand-time">Recorded at --:-- today</div>
+                <div class="info-card-divider"></div>
+                <h4 class="info-card-sublabel">This week</h4>
+                <div class="weekly-peaks" id="weekly-peaks">
+                    <div class="weekly-row">
+                        <span class="day">Mon</span>
+                        <span class="val" id="peak-mon">-- W</span>
+                    </div>
+                    <div class="weekly-row">
+                        <span class="day">Tue</span>
+                        <span class="val" id="peak-tue">-- W</span>
+                    </div>
+                    <div class="weekly-row">
+                        <span class="day">Wed</span>
+                        <span class="val" id="peak-wed">-- W</span>
+                    </div>
+                    <div class="weekly-row">
+                        <span class="day">Thu</span>
+                        <span class="val" id="peak-thu">-- W</span>
+                    </div>
+                    <div class="weekly-row">
+                        <span class="day">Fri</span>
+                        <span class="val" id="peak-fri">-- W</span>
+                    </div>
+                    <div class="weekly-row">
+                        <span class="day">Sat</span>
+                        <span class="val" id="peak-sat">-- W</span>
+                    </div>
+                    <div class="weekly-row">
+                        <span class="day">Sun</span>
+                        <span class="val highlight" id="peak-sun">-- W</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estimated Cost -->
+            <div class="info-card cost-card" id="cost-card">
+                <h3 class="info-card-label">ESTIMATED COST</h3>
+                <div class="info-card-value" id="cost-today">₹--</div>
+                <div class="info-card-sub">Today · at ₹8.1 / kWh</div>
+                <div class="info-card-divider"></div>
+                <div class="cost-breakdown">
+                    <div class="cost-row">
+                        <span class="cost-label">This week</span>
+                        <span class="cost-val" id="cost-week">₹--</span>
+                    </div>
+                    <div class="cost-row">
+                        <span class="cost-label">This month</span>
+                        <span class="cost-val" id="cost-month">₹--</span>
+                    </div>
+                    <div class="cost-row projected">
+                        <span class="cost-label">Projected bill</span>
+                        <span class="cost-val projected-val" id="cost-projected">₹-- est.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div class="info-card alerts-card" id="alerts-card">
+                <h3 class="info-card-label">ALERTS</h3>
+                <div class="alerts-list" id="alerts-list">
+                    <div class="alert-item">
+                        <span class="alert-dot neutral"></span>
+                        <div class="alert-content">
+                            <div class="alert-text">Waiting for data...</div>
+                            <div class="alert-time">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <!-- App Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

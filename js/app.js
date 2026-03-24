@@ -339,8 +339,9 @@
         console.log('%c⚡ LIVE MODE — Listening to Firebase Realtime Database',
             'color: #34d399; font-weight: bold; font-size: 14px;');
 
-        // Monitor connection state
+        // Monitor connection state (skip during demo mode)
         database.ref('.info/connected').on('value', snap => {
+            if (inDemoMode) return; // Don't overwrite demo status
             setConnectionStatus(snap.val() === true, snap.val() ? 'Connected' : 'Disconnected');
         });
 

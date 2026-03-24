@@ -173,10 +173,13 @@
         console.log('%c⚡ DEMO MODE OFF — Switching to live Firebase data',
             'color: #34d399; font-weight: bold; font-size: 14px;');
 
-        // Start Firebase if credentials exist and not already listening
+        // Restore correct connection status
         if (hasFirebaseConfig() && !firebaseListenersActive) {
             startFirebaseListeners();
-        } else if (!hasFirebaseConfig()) {
+        } else if (hasFirebaseConfig() && firebaseListenersActive) {
+            // Listeners already running — just restore the status text
+            setConnectionStatus(true, 'Connected');
+        } else {
             setConnectionStatus(false, 'No config');
         }
     }

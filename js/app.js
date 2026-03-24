@@ -53,6 +53,11 @@
     }
 
     function startDemoMode() {
+        // Clear any previous demo interval (safe for re-entry)
+        if (demoIntervalId) {
+            clearInterval(demoIntervalId);
+            demoIntervalId = null;
+        }
         inDemoMode = true;
         console.log('%c⚡ DEMO MODE — Showing simulated data',
             'color: #fbbf24; font-weight: bold; font-size: 14px;');
@@ -104,8 +109,8 @@
         }
         bulkSeedPowerTrend(seedPoints);
 
-        // Live update every 2 seconds
-        demoIntervalId = setInterval(() => {
+        // Demo tick — generates one set of live readings
+        function demoTick() {
             if (!inDemoMode) return;
             const now = new Date();
             const second = now.getSeconds();
@@ -129,7 +134,11 @@
                     now.getMinutes().toString().padStart(2, '0');
                 updatePowerTrend(timeStr, power);
             }
-        }, 2000);
+        }
+
+        // Show live readings immediately, then continue every 2 seconds
+        demoTick();
+        demoIntervalId = setInterval(demoTick, 2000);
 
         updateCosts(3.41);
     }

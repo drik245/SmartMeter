@@ -129,11 +129,10 @@
                 timestamp: now.getTime()
             });
 
-            if (second < 2) {
-                const timeStr = now.getHours().toString().padStart(2, '0') + ':' +
-                    now.getMinutes().toString().padStart(2, '0');
-                updatePowerTrend(timeStr, power);
-            }
+            // Push to trend chart every tick (2s) for 30s/1m resolution
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' +
+                now.getMinutes().toString().padStart(2, '0');
+            updatePowerTrend(timeStr, power);
         }
 
         // Show live readings immediately, then continue every 2 seconds

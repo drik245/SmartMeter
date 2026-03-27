@@ -172,13 +172,15 @@ function initLoadProfileChart() {
 
 // Each entry: { time: 'HH:MM', timestamp: Date.now(), power: number }
 const powerDataStore = [];
-const MAX_STORE_POINTS = 1440; // 24h at 1-min intervals
-let currentRange = '30m'; // '30m' | '3h' | '24h'
+const MAX_STORE_POINTS = 2880; // enough for 24h at ~30s intervals
+let currentRange = '30s'; // '30s' | '1m' | '30m' | '3h' | '24h'
 
 const RANGE_CONFIG = {
-    '30m': { minutes: 30, maxTicks: 6, title: 'Power trend — last 30 minutes' },
-    '3h': { minutes: 180, maxTicks: 7, title: 'Power trend — last 3 hours' },
-    '24h': { minutes: 1440, maxTicks: 8, title: 'Power trend — last 24 hours' },
+    '30s': { seconds: 30,    maxTicks: 6,  title: 'Power trend — last 30 seconds' },
+    '1m':  { seconds: 60,    maxTicks: 6,  title: 'Power trend — last 1 minute' },
+    '30m': { seconds: 1800,  maxTicks: 6,  title: 'Power trend — last 30 minutes' },
+    '3h':  { seconds: 10800, maxTicks: 7,  title: 'Power trend — last 3 hours' },
+    '24h': { seconds: 86400, maxTicks: 8,  title: 'Power trend — last 24 hours' },
 };
 
 /**
@@ -222,11 +224,22 @@ function renderPowerTrendForRange(range) {
     if (!powerTrendChart) return;
 
     const cfg = RANGE_CONFIG[range];
-    const cutoff = Date.now() - cfg.minutes * 60 * 1000;
+    const cutoff = Date.now() - cfg.seconds * 1000;
 
     const filtered = powerDataStore.filter(d => d.timestamp >= cutoff);
 
-    powerTrendChart.data.labels = filtered.map(d => d.time);
+    // For short ranges show HH:MM:SS, for longer ranges show HH:MM
+    const useSeconds = (range === '30s' || range === '1m');
+    powerTrendChart.data.labels = filtered.map(d => {
+        if (useSeconds) {
+            // Use stored timestamp for accurate seconds
+            const dt = new Date(d.timestamp);
+            return dt.getHours().toString().padStart(2, '0') + ':' +
+                   dt.getMinutes().toString().padStart(2, '0') + ':' +
+                   dt.getSeconds().toString().padStart(2, '0');
+        }
+        return d.time; // HH:MM
+    });
     powerTrendChart.data.datasets[0].data = filtered.map(d => d.power);
     powerTrendChart.options.scales.x.ticks.maxTicksLimit = cfg.maxTicks;
     powerTrendChart.update('none');
